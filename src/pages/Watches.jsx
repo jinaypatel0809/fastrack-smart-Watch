@@ -1,377 +1,214 @@
 import { useState, useMemo } from "react";
+import { useCart } from "../context/CartContext";
+
+// Real watch images from Unsplash (free, no auth needed)
+const WATCH_IMGS = {
+  // Analog women rose gold
+  rg1: "https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=400&q=80",
+  rg2: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&q=80",
+  rg3: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&q=80",
+  rg4: "https://images.unsplash.com/photo-1548171915-e79a380a2a4b?w=400&q=80",
+  // Smartwatch
+  sw1: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400&q=80",
+  sw2: "https://images.unsplash.com/photo-1617625802912-cde586faf331?w=400&q=80",
+  sw3: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400&q=80",
+  sw4: "https://images.unsplash.com/photo-1544117519-31a4b719223d?w=400&q=80",
+  // Blue dial analog
+  bl1: "https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=400&q=80",
+  bl2: "https://images.unsplash.com/photo-1539874754764-5a96559165b0?w=400&q=80",
+  bl3: "https://images.unsplash.com/photo-1585123334904-845d60e97b29?w=400&q=80",
+  bl4: "https://images.unsplash.com/photo-1606744837616-56c9a5c6a6eb?w=400&q=80",
+  // Black smartwatch
+  bsw1: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80",
+  bsw2: "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=400&q=80",
+  bsw3: "https://images.unsplash.com/photo-1612817288484-6f916006741a?w=400&q=80",
+  bsw4: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400&q=80",
+  // Silver/steel mens
+  sl1: "https://images.unsplash.com/photo-1533139502658-0198f920d8e8?w=400&q=80",
+  sl2: "https://images.unsplash.com/photo-1526045431048-f857369baa09?w=400&q=80",
+  sl3: "https://images.unsplash.com/photo-1619946794135-5bc917a27793?w=400&q=80",
+  sl4: "https://images.unsplash.com/photo-1548690312-e3b507d8c110?w=400&q=80",
+  // Dark/black mens
+  dk1: "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=400&q=80",
+  dk2: "https://images.unsplash.com/photo-1564213786700-f0d40a7af46b?w=400&q=80",
+  dk3: "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400&q=80",
+  dk4: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+  // Brown leather
+  br1: "https://images.unsplash.com/photo-1509941943102-10c232535736?w=400&q=80",
+  br2: "https://images.unsplash.com/photo-1542496658-e33a6d0d5f5a?w=400&q=80",
+  br3: "https://images.unsplash.com/photo-1595586964632-b215dfbc064a?w=400&q=80",
+  br4: "https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?w=400&q=80",
+  // Grey/white minimal
+  gr1: "https://images.unsplash.com/photo-1620625515032-6ed0c1790c75?w=400&q=80",
+  gr2: "https://images.unsplash.com/photo-1551816230-ef5deaed4a26?w=400&q=80",
+  gr3: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400&q=80",
+  gr4: "https://images.unsplash.com/photo-1533139502658-0198f920d8e8?w=400&q=80",
+  // Chronograph
+  ch1: "https://images.unsplash.com/photo-1540496905036-5937c10647cc?w=400&q=80",
+  ch2: "https://images.unsplash.com/photo-1586495777744-4e6232bf2f88?w=400&q=80",
+  ch3: "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=400&q=80",
+  ch4: "https://images.unsplash.com/photo-1517438476312-10d79c077509?w=400&q=80",
+  // Copper/gold ladies
+  cp1: "https://images.unsplash.com/photo-1606744888344-493238951221?w=400&q=80",
+  cp2: "https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=400&q=80",
+  cp3: "https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=400&q=80",
+  cp4: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&q=80",
+  // Pink ladies
+  pk1: "https://images.unsplash.com/photo-1612817288484-6f916006741a?w=400&q=80",
+  pk2: "https://images.unsplash.com/photo-1559563458-527698bf5295?w=400&q=80",
+  pk3: "https://images.unsplash.com/photo-1548171915-e79a380a2a4b?w=400&q=80",
+  pk4: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&q=80",
+  // Navy blue casual
+  nb1: "https://images.unsplash.com/photo-1542496658-e33a6d0d5f5a?w=400&q=80",
+  nb2: "https://images.unsplash.com/photo-1509941943102-10c232535736?w=400&q=80",
+  nb3: "https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=400&q=80",
+  nb4: "https://images.unsplash.com/photo-1539874754764-5a96559165b0?w=400&q=80",
+};
 
 const ALL_PRODUCTS = [
   {
     id: 1,
-    name: "Fastrack Astor FR2 Pro Smart Watch with 3.63 cm AMOLED Display with 466*466 Pixel Resolution, AI Voice Assistant",
-    shortName: "Fastrack Astor FR2 Pro Smart Watch with 3.63 cm AMOLED Display",
-    category: "Unisex Watch", 
-    price: 2799, 
-    oldPrice: 5499, 
-    discount: 49, 
-    rating: 4.4, 
-    reviews: 52,
-    badge: "New Arrival", 
-    displayType: "Smart", 
-    gender: "Men", 
-    strapColor: "Black", 
-    size: "Small", 
-    available: true,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw8178fcf1/images/Fastrack/Catalog/38156NM01_1.jpg?sw=600&sh=600",
-    description: "The Fastrack Astor FR2 Pro Smartwatch features a sharp 3.63 cm AMOLED display with a 466x466 pixel resolution for stunning clarity. Stay connected with SingleSync BT calling, use the AI voice assistant, and track your fitness with 100+ sports modes and watchfaces. With IP68 water resistance and up to 5 days of battery life, it's designed for everyday performance and style.",
-    features: ["3.63 cm AMOLED Display", "AI Voice Assistant", "SingleSync BT Calling", "100+ Sports Modes", "IP68 Water Resistant", "5-Day Battery Life"],
-    colors: [{ name: "Black", hex: "#1a1a1a" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw8178fcf1/images/Fastrack/Catalog/38156NM01_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw45083838/images/Fastrack/Catalog/38156NM01_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw2d411bb5/images/Fastrack/Catalog/38156NM01_3.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwfc49dd84/images/Fastrack/Catalog/38156NM01_4.jpg?sw=600&sh=600",
-    ],
+    name: "Vyb Striker By Fastrack Quartz Analog Rose Gold Dial Rose Gold Stainless Steel Strap Watch",
+    shortName: "Vyb Striker By Fastrack Quartz Analog Rose Gold Dial Rose Go...",
+    category: "Girls Watch", price: 1995, oldPrice: 2850, discount: 30, rating: 4.4, reviews: 128,
+    badge: "New Arrival", displayType: "Analog", gender: "Girls", strapColor: "Rose Gold", size: "Small", available: true,
+    thumb: WATCH_IMGS.rg1,
+    description: "A bold statement piece for the modern woman. The Vyb Striker features a premium quartz movement with a stunning rose gold dial, encased in a sleek stainless steel bracelet. Perfect for both casual outings and evening events.",
+    features: ["Quartz Movement", "Stainless Steel Case", "Water Resistant 30m", "Mineral Crystal Glass", "Push Button Clasp"],
+    colors: [{ name: "Rose Gold", hex: "#d4a96a" }, { name: "Silver", hex: "#c0c0c0" }, { name: "Black", hex: "#1a1a1a" }],
+    images: [WATCH_IMGS.rg1, WATCH_IMGS.rg2, WATCH_IMGS.rg3, WATCH_IMGS.rg4],
   },
   {
     id: 2,
-    name: "Fastrack New Astor FS1 PRO Smartwatch, Large Super AMOLED Display 5 CM AOD, NextGen Chipset",
-    shortName: "Fastrack New Astor FS1 PRO Smartwatch, Large Super AMOLED Display 5 CM AOD",
-    category: "Unisex Watch", 
-    price: 2099, 
-    oldPrice: 4999, 
-    discount: 58, 
-    rating: 5.0, 
-    reviews: 25,
-    badge: "Best Seller", 
-    displayType: "Smart", 
-    gender: "Men", 
-    strapColor: "Black", 
-    size: "Small", 
-    available: true,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw8a8d659e/images/Fastrack/Catalog/38151PP01K_1.jpg?sw=600&sh=600",
-    description: "The Fastrack New Astor FS1 PRO Smartwatch boasts a large 5 cm Super AMOLED display with Always-On Display (AOD) and a NextGen chipset for a fast, lag-free experience. Navigate easily with the functional crown, enjoy SingleSync BT calling, and access 100+ sports modes and watchfaces. With IP68 water resistance, it's built for both performance and style.",
-    features: ["5 CM Super AMOLED", "Always-On Display", "NextGen Chipset", "SingleSync BT Calling", "100+ Sports Modes", "IP68 Water Resistant"],
-    colors: [{ name: "Black", hex: "#1a1a1a" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw8a8d659e/images/Fastrack/Catalog/38151PP01K_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwb637b030/images/Fastrack/Catalog/38151PP01K_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw2101da2c/images/Fastrack/Catalog/38151PP01K_3.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw20a561b5/images/Fastrack/Catalog/38151PP01K_4.jpg?sw=600&sh=600",
-    ],
+    name: "Fastrack Astor FR2 Pro Smart Watch With 3.63 Cm AMOLED Display, BT Calling, 100+ Sports Modes",
+    shortName: "Fastrack Astor FR2 Pro Smart Watch With 3.63 Cm AMOLED Displ...",
+    category: "Unisex Watch", price: 2799, oldPrice: 5499, discount: 49, rating: 4.6, reviews: 52,
+    badge: "Best Seller", displayType: "Smart", gender: "Unisex", strapColor: "Black", size: "Large", available: true,
+    thumb: WATCH_IMGS.sw1,
+    description: "The Astor FR2 Pro is a powerhouse smartwatch packed with health and fitness features. With its stunning AMOLED display, built-in Bluetooth calling, and 100+ sports modes, it's the perfect companion for your active lifestyle.",
+    features: ["3.63 Cm AMOLED Display", "Bluetooth Calling", "100+ Sports Modes", "Heart Rate & SpO2 Monitor", "7-Day Battery Life", "IP68 Water Resistant"],
+    colors: [{ name: "Black", hex: "#1a1a1a" }, { name: "Navy Blue", hex: "#1a3060" }, { name: "Olive", hex: "#3a4a2a" }],
+    images: [WATCH_IMGS.sw1, WATCH_IMGS.sw2, WATCH_IMGS.sw3, WATCH_IMGS.sw4],
   },
   {
     id: 3,
-    name: "Fastrack MYND - 4.9 cm AMOLED Display, AI Watchface, Offline Voice Commands, AI Chat, BT Calling IP68",
-    shortName: "Fastrack MYND - 4.9 cm AMOLED Display, AI Watchface, BT Calling IP68",
-    category: "Unisex Watch", price: 3599, oldPrice: 5499, discount: 35, rating: 4.0, reviews: 10,
-    badge: "Best Seller", displayType: "Smart", gender: "Unisex", strapColor: "Black", size: "Medium", available: true,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwd1ba24e6/images/Fastrack/Catalog/38184PP01K_1.jpg?sw=600&sh=600",
-    description: "Stunning 4.9 cm Curved AMOLED Display with crisp visuals and sleek 2.5D graphics for an immersive viewing experience. Smart AI Features including AI Chat & AI Watchface for personalized assistance. Offline Voice Commands let you control your watch hands-free. Comprehensive 24/7 Health Suite tracks heart rate, SpO2, sleep patterns, and more.",
-    features: ["4.9 cm Curved AMOLED", "AI Chat & AI Watchface", "Offline Voice Commands", "24/7 Health Suite", "BT Calling", "IP68 Water Resistant"],
-    colors: [{ name: "Black", hex: "#1e1e3a" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwd1ba24e6/images/Fastrack/Catalog/38184PP01K_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwfdfa4339/images/Fastrack/Catalog/38184PP01K_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwd376ac78/images/Fastrack/Catalog/38184PP01K_3.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw4d4b62dd/images/Fastrack/Catalog/38184PP01K_4.jpg?sw=600&sh=600",
-    ],
+    name: "Fastrack Vyb Limitless Quartz Analog Blue Dial Silver Stainless Steel Strap Watch",
+    shortName: "Fastrack Vyb Limitless Quartz Analog Blue Dial...",
+    category: "Guys Watch", price: 1595, oldPrice: 2275, discount: 30, rating: 4.8, reviews: 5,
+    badge: null, displayType: "Analog", gender: "Men", strapColor: "Silver", size: "Medium", available: true,
+    thumb: WATCH_IMGS.bl1,
+    description: "Break limits with the Vyb Limitless. Featuring a striking blue dial with luminous hands, this bold analog watch is built for those who dare to stand out. The slim stainless steel bracelet ensures all-day comfort.",
+    features: ["Quartz Movement", "Blue Sunray Dial", "Luminous Hands", "Stainless Steel Bracelet", "Water Resistant 50m"],
+    colors: [{ name: "Silver/Blue", hex: "#b0d8e8" }, { name: "Black", hex: "#1e1e3a" }],
+    images: [WATCH_IMGS.bl1, WATCH_IMGS.bl2, WATCH_IMGS.bl3, WATCH_IMGS.bl4],
   },
   {
     id: 4,
-    name: "Fastrack Astor FR2 Pro Smart Watch with 3.63 cm AMOLED Display - Rose Gold Edition",
-    shortName: "Fastrack Astor FR2 Pro Smart Watch 3.63 cm AMOLED - Rose Gold",
-    category: "Unisex Watch", price: 2799, oldPrice: 5499, discount: 49, rating: 3.6, reviews: 3,
-    badge: "Best Seller", displayType: "Smart", gender: "Unisex", strapColor: "Rose Gold", size: "Large", available: false,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw55c4b031/images/Fastrack/Catalog/38156WM01_1.jpg?sw=600&sh=600",
-    description: "The Fastrack Astor FR2 Pro Smartwatch features a sharp 3.63 cm AMOLED display with a 466x466 pixel resolution for stunning clarity. Stay connected with SingleSync BT calling, use the AI voice assistant, and track your fitness with 100+ sports modes and watchfaces. With IP68 water resistance and up to 5 days of battery life.",
-    features: ["3.63 cm AMOLED Display", "AI Voice Assistant", "SingleSync BT Calling", "100+ Sports Modes", "IP68 Water Resistant", "5-Day Battery Life"],
-    colors: [{ name: "Rose Gold", hex: "#B76E79" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw55c4b031/images/Fastrack/Catalog/38156WM01_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwbff8fcac/images/Fastrack/Catalog/38156WM01_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwc87db555/images/Fastrack/Catalog/38156WM01_3.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwe0fcaab8/images/Fastrack/Catalog/38156WM01_4.jpg?sw=600&sh=600",
-    ],
+    name: "Fastrack Revoltt XR1 3.50 Cm Smart Watch, BT Calling, Fast Charge, 100+ Watch Faces",
+    shortName: "Fastrack Revoltt XR1 3.50 Cm, BT Calling, Fast Charge, 100+...",
+    category: "Unisex Watch", price: 1500, oldPrice: 3995, discount: 62, rating: 4.1, reviews: 21,
+    badge: "Best Seller", displayType: "Smart", gender: "Unisex", strapColor: "Black", size: "Large", available: true,
+    thumb: WATCH_IMGS.bsw1,
+    description: "The Revoltt XR1 brings premium features at an unbeatable price. Fast charging, Bluetooth calling, and 100+ customizable watch faces engineered for the next generation. Charge for 10 minutes, run for a full day.",
+    features: ["3.50 Cm Display", "10-min Fast Charge", "Bluetooth Calling", "100+ Watch Faces", "Heart Rate Monitor", "IP67 Water Resistant"],
+    colors: [{ name: "Black", hex: "#0a0a0a" }, { name: "Red", hex: "#6b0000" }],
+    images: [WATCH_IMGS.bsw1, WATCH_IMGS.bsw2, WATCH_IMGS.bsw3, WATCH_IMGS.bsw4],
   },
   {
     id: 5,
-    name: "Fastrack MYND - 4.9 cm AMOLED Display, AI Watchface, BT Calling IP68, AI Chat, Offline Voice Commands",
-    shortName: "Fastrack MYND 4.9 cm AMOLED, AI Watchface, BT Calling IP68",
-    category: "Unisex Watch", price: 3599, oldPrice: 5499, discount: 35, rating: 4.5, reviews: 8,
-    badge: "Best Seller", displayType: "Digital", gender: "Unisex", strapColor: "Black", size: "Large", available: true,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw0605633c/images/Fastrack/Catalog/38186NM01K_1.jpg?sw=600&sh=600",
-    description: "Fastrack Marvellous FX3 premium smartwatch features a stunning 1.43 AMOLED display with 2.5D graphics, delivering vibrant colors and exceptional clarity. Crafted with a sleek metal case and metal strap, its slim 10.4mm profile offers a refined and comfortable fit. Personalize your look with AI watchfaces and navigate effortlessly using multiple menu styles.",
-    features: ["1.43 AMOLED Display", "Metal Case & Strap", "AI Watchfaces", "BT Calling", "24/7 Health Suite", "IP68 Water Resistant"],
-    colors: [{ name: "Black", hex: "#1e1e3a" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw0605633c/images/Fastrack/Catalog/38186NM01K_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw57b10390/images/Fastrack/Catalog/38186NM01K_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwa9d5206a/images/Fastrack/Catalog/38186NM01K_3.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw3fb25f44/images/Fastrack/Catalog/38186NM01K_4.jpg?sw=600&sh=600",
-    ],
+    name: "Fastrack UFO Quartz Multifunction Green Dial Silver Stainless Steel Strap Watch",
+    shortName: "Fastrack UFO Quartz Multifunction Green Dial Silver Stainles...",
+    category: "Guys Watch", price: 5995, oldPrice: null, discount: null, rating: 4.7, reviews: 9,
+    badge: null, displayType: "Analog", gender: "Men", strapColor: "Silver", size: "Large", available: true,
+    thumb: WATCH_IMGS.sl1,
+    description: "Out-of-this-world design meets precision engineering. The UFO features a mesmerizing multi-textured dial with multifunction display. For those who look to the stars and still make it to every meeting on time.",
+    features: ["Quartz Multifunction", "Green Textured Dial", "Day & Date Display", "Stainless Steel Bracelet", "Water Resistant 100m"],
+    colors: [{ name: "Silver/Green", hex: "#e0e8e0" }, { name: "Black/Green", hex: "#1a2a1a" }],
+    images: [WATCH_IMGS.sl1, WATCH_IMGS.sl2, WATCH_IMGS.sl3, WATCH_IMGS.sl4],
   },
   {
     id: 6,
-    name: "Fastrack Marvellous FX3 Smartwatch with 1.43 AMOLED Display, Metal Case & Strap, Additional Silicone Strap",
-    shortName: "Fastrack Marvellous FX3 Smartwatch 1.43 AMOLED, Metal Case & Strap",
-    category: "Unisex Watch", price: 6399, oldPrice: 8499, discount: 25, rating: 4.8, reviews: 1,
-    badge: "Best Seller", displayType: "Analog", gender: "Unisex", strapColor: "Green", size: "Large", available: true,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw472776ec/images/Fastrack/Catalog/38184PP02K_1.jpg?sw=600&sh=600",
-    description: "Stunning 4.9 cm Curved AMOLED Display with crisp visuals and sleek 2.5D graphics. Smart AI Features including AI Chat & AI Watchface for personalized assistance and unique watch faces. Offline Voice Commands let you control your watch hands-free. Comprehensive 24/7 Health Suite tracks heart rate, SpO2, sleep patterns, and more.",
-    features: ["4.9 cm Curved AMOLED", "AI Chat & AI Watchface", "Offline Voice Commands", "BT Calling", "IP68 Water Resistant", "Multiple Menu Styles"],
-    colors: [{ name: "Green", hex: "#50C878" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw472776ec/images/Fastrack/Catalog/38184PP02K_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwfde1ad10/images/Fastrack/Catalog/38184PP02K_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwfde1ad10/images/Fastrack/Catalog/38184PP02K_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwd845611d/images/Fastrack/Catalog/38184PP02K_4.jpg?sw=600&sh=600",
-    ],
+    name: "Fastrack Vyb Nimbus Quartz Analog Black Dial Two Toned Stainless Steel Strap Watch",
+    shortName: "Fastrack Vyb Nimbus Quartz Analog Black Dial Two Toned Color...",
+    category: "Guys Watch", price: 2195, oldPrice: 3135, discount: 30, rating: 4.3, reviews: 14,
+    badge: null, displayType: "Analog", gender: "Men", strapColor: "Black", size: "Medium", available: true,
+    thumb: WATCH_IMGS.dk1,
+    description: "Dark, bold, and commanding. The Nimbus features a sleek black dial with two-toned stainless steel construction that demands attention in every room. Engineered for the man who means business, day or night.",
+    features: ["Quartz Analog", "Two-Toned Steel Strap", "Black Sunray Dial", "Date Display", "Water Resistant 30m"],
+    colors: [{ name: "Two-Toned", hex: "#1e1e3a" }, { name: "All Black", hex: "#0a0a0a" }, { name: "Silver", hex: "#c0c8d8" }],
+    images: [WATCH_IMGS.dk1, WATCH_IMGS.dk2, WATCH_IMGS.dk3, WATCH_IMGS.dk4],
   },
   {
     id: 7,
-    name: "Fastrack New Astor FS1 PRO Smartwatch Beige, Large Super AMOLED Display 5 CM AOD, NextGen Chipset",
-    shortName: "Fastrack New Astor FS1 PRO Smartwatch Beige, 5 CM Super AMOLED AOD",
-    category: "Unisex Watch", price: 2099, oldPrice: 4999, discount: 58, rating: 4.5, reviews: 7,
-    badge: "Best Seller", displayType: "Digital", gender: "Unisex", strapColor: "Beige", size: "Small", available: true,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwd617ade8/images/Fastrack/Catalog/38151PP05K_1.jpg?sw=600&sh=600",
-    description: "The Fastrack New Astor FS1 PRO Smartwatch boasts a large 5 cm Super AMOLED display with Always-On Display (AOD) and a NextGen chipset for a fast, lag-free experience. Navigate easily with the functional crown, enjoy SingleSync BT calling, and access 100+ sports modes and watchfaces. With IP68 water resistance, it's built for both performance and style.",
-    features: ["5 CM Super AMOLED AOD", "NextGen Chipset", "Functional Crown", "SingleSync BT Calling", "100+ Sports Modes", "IP68 Water Resistant"],
-    colors: [{ name: "Beige", hex: "#F5F5DC" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwd617ade8/images/Fastrack/Catalog/38151PP05K_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw01c2da24/images/Fastrack/Catalog/38151PP05K_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw601b649e/images/Fastrack/Catalog/38151PP05K_3.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw601b649e/images/Fastrack/Catalog/38151PP05K_3.jpg?sw=600&sh=600",
-    ],
+    name: "Fastrack Pulse IV Dual Time Analog Watch With Green Dial & Brown Leather Strap",
+    shortName: "Fastrack Pulse IV Dual Time Analog Watch With Green Dial & B...",
+    category: "Guys Watch", price: 4295, oldPrice: null, discount: null, rating: null, reviews: null,
+    badge: null, displayType: "Analog", gender: "Men", strapColor: "Brown", size: "Large", available: false,
+    thumb: WATCH_IMGS.br1,
+    description: "Adventure-ready with dual time zone display and a rugged green dial. The Pulse IV is built for the explorer — whether crossing time zones or trekking through jungles. Paired with a premium genuine leather strap.",
+    features: ["Dual Time Zone", "Green Military Dial", "Genuine Leather Strap", "Mineral Glass", "Water Resistant 50m", "Luminous Hands"],
+    colors: [{ name: "Brown/Green", hex: "#2d1b00" }, { name: "Black/Green", hex: "#1a1a1a" }],
+    images: [WATCH_IMGS.br1, WATCH_IMGS.br2, WATCH_IMGS.br3, WATCH_IMGS.br4],
   },
   {
     id: 8,
-    name: "Fastrack Optimus 2 Pro 3.63 cm AMOLED, Advanced Blazing Fast UI, AOD, Metal Case, IP68, Working Crown Smartwatch",
-    shortName: "Fastrack Optimus 2 Pro 3.63 cm AMOLED, AOD, Metal Case, IP68",
-    category: "Unisex Watch", price: 2499, oldPrice: 4999, discount: 44, rating: 4.9, reviews: 28,
-    badge: "Best Seller", displayType: "Digital", gender: "Unisex", strapColor: "Black", size: "Small", available: true,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw5a755061/images/Fastrack/Catalog/38153NP01_1.jpg?sw=600&sh=600",
-    description: "Fastrack Optimus 2 Pro features a 3.63 cm AMOLED Display with Bright Pixel Resolution, SingleSync BT Calling with Advanced Chipset, Calculator, AI Voice Assistant, 100+ Sports Modes, One Click Health Measurement, Auto Stress Monitor, 24x7 Heart Rate Monitor, SpO2 and Sleep Monitor with REM Sleep.",
-    features: ["3.63 cm AMOLED Display", "Working Crown", "AI Voice Assistant", "100+ Sports Modes", "24x7 Heart Rate Monitor", "IP68 Metal Case"],
-    colors: [{ name: "Black", hex: "#0F0F0F" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw5a755061/images/Fastrack/Catalog/38153NP01_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw8036a98a/images/Fastrack/Catalog/38153NP01_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw59eedf26/images/Fastrack/Catalog/38153NP01_3.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwa3376bb1/images/Fastrack/Catalog/38153NP01_4.jpg?sw=600&sh=600",
-    ],
+    name: "Fastrack Fastfit Quartz Analog Grey Dial Grey Silicone Strap Watch",
+    shortName: "Fastrack Fastfit Quartz Analog Grey Dial Grey Colour Silicon...",
+    category: "Unisex Watch", price: 895, oldPrice: 995, discount: 10, rating: 3.9, reviews: 42,
+    badge: null, displayType: "Analog", gender: "Unisex", strapColor: "Grey", size: "Medium", available: true,
+    thumb: WATCH_IMGS.gr1,
+    description: "Clean, minimal, and built for everyday wear. The Fastfit is your no-nonsense companion — a simple grey dial paired with a comfortable silicone strap that goes from gym to boardroom without missing a beat.",
+    features: ["Quartz Analog", "Silicone Strap", "Grey Minimalist Dial", "Lightweight Design", "Water Resistant 30m"],
+    colors: [{ name: "Grey", hex: "#c8c8c8" }, { name: "Black", hex: "#333" }, { name: "Navy", hex: "#1a2a4a" }],
+    images: [WATCH_IMGS.gr1, WATCH_IMGS.gr2, WATCH_IMGS.gr3, WATCH_IMGS.gr4],
   },
   {
     id: 9,
-    name: "Fastrack Stunners Blue Dial Metal Strap Watch for Guys",
-    shortName: "Fastrack Stunners Blue Dial Metal Strap Watch for Guys",
-    category: "Guys Watch", 
-    price: 1195, 
-    oldPrice: 1495, 
-    discount: 20, 
-    rating: 4.8, 
-    reviews: 404,
-    badge: "Best Seller", 
-    displayType: "Digital", 
-    gender: "Girls", 
-    strapColor: "Blue", 
-    size: "Small", 
-    available: true,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw155168d9/images/Fastrack/Catalog/3278SM03_1.jpg?sw=600&sh=600",
-    description: "Meet the Fastrack Stunners-your go-to for making everyday fits look fire. The striking blue dial hits just right against the sleek silver metal strap, giving clean guy energy with a side of street-style flair. It's not just a watch, it's the wrist upgrade you didn't know you needed.",
-    features: ["3.63 cm AMOLED Display", "Working Crown", "AI Voice Assistant", "100+ Sports Modes", "24x7 Heart Rate Monitor", "IP68 Metal Case"],
-    colors: [{ name: "Blue", hex: "#4169E1" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw155168d9/images/Fastrack/Catalog/3278SM03_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw155168d9/images/Fastrack/Catalog/3278SM03_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwa749f12e/images/Fastrack/Catalog/3278SM03_3.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwe74f78e2/images/Fastrack/Catalog/3278SM03_4.jpg?sw=600&sh=600",
-    ],
+    name: "Fastrack Overdrive Chronograph Black Dial Men Stainless Steel Strap Watch",
+    shortName: "Fastrack Overdrive Chronograph Black Dial Men Watch...",
+    category: "Guys Watch", price: 3495, oldPrice: 4999, discount: 30, rating: 4.3, reviews: 18,
+    badge: "Best Seller", displayType: "Analog", gender: "Men", strapColor: "Black", size: "Large", available: true,
+    thumb: WATCH_IMGS.ch1,
+    description: "Race-inspired engineering meets everyday boldness. The Overdrive Chronograph features a tachymeter bezel, three-eye sub-dials, and a bold black dial. Built for those who measure life in seconds.",
+    features: ["Chronograph Movement", "Tachymeter Bezel", "Three Sub-Dials", "Stainless Steel Strap", "Water Resistant 100m", "Anti-Reflective Glass"],
+    colors: [{ name: "Black/Red", hex: "#111" }, { name: "Black/Blue", hex: "#0a0a2a" }, { name: "Silver", hex: "#888" }],
+    images: [WATCH_IMGS.ch1, WATCH_IMGS.ch2, WATCH_IMGS.ch3, WATCH_IMGS.ch4],
   },
   {
     id: 10,
-    name: "Fastrack Style Up Grey Dial Stainless Steel Strap Watch for Guys",
-    shortName: "Fastrack Style Up Grey Dial Stainless Steel Strap Watch for Guys",
-    category: "Guys Watch", 
-    price: 2315, 
-    oldPrice: 2895, 
-    discount: 20, 
-    rating: 5.8, 
-    reviews: 1,
-    badge: "Best Seller", 
-    displayType: "Digital", 
-    gender: "Girls", 
-    strapColor: "Black", 
-    size: "Small", 
-    available: true,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwf3ac7583/images/Fastrack/Catalog/3278NM01_1.jpg?sw=600&sh=600",
-    description: "Meet the Fastrack Stunners-your go-to for making everyday fits look fire. The striking blue dial hits just right against the sleek silver metal strap, giving clean guy energy with a side of street-style flair. It's not just a watch, it's the wrist upgrade you didn't know you needed.",
-    features: ["3.63 cm AMOLED Display", "Working Crown", "AI Voice Assistant", "100+ Sports Modes", "24x7 Heart Rate Monitor", "IP68 Metal Case"],
-    colors: [{ name: "Black", hex: "#0F0F0F" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwf3ac7583/images/Fastrack/Catalog/3278NM01_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwd03887a2/images/Fastrack/Catalog/3278NM01_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw98f9dce1/images/Fastrack/Catalog/3278NM01_3.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw66456e14/images/Fastrack/Catalog/3278NM01_5.jpg?sw=600&sh=600",
-    ],
+    name: "Fastrack NR3089SL01 Analog Watch Copper Dial Rose Gold Steel Strap Women",
+    shortName: "Fastrack NR3089SL01 Analog Watch Copper Dial Steel Strap...",
+    category: "Girls Watch", price: 1295, oldPrice: 1850, discount: 30, rating: 4.5, reviews: 33,
+    badge: "New Arrival", displayType: "Analog", gender: "Girls", strapColor: "Rose Gold", size: "Small", available: true,
+    thumb: WATCH_IMGS.cp1,
+    description: "Warm copper tones meet timeless elegance. This delicate ladies watch features a rich copper-toned dial housed in a rose gold stainless steel case with matching bracelet. A perfect gift for the woman who appreciates refined beauty.",
+    features: ["Quartz Movement", "Copper Dial", "Rose Gold Steel Strap", "Mineral Glass", "Water Resistant 30m", "Fold-Over Clasp"],
+    colors: [{ name: "Rose Gold/Copper", hex: "#c8956c" }, { name: "Silver/White", hex: "#e8e0d8" }],
+    images: [WATCH_IMGS.cp1, WATCH_IMGS.cp2, WATCH_IMGS.cp3, WATCH_IMGS.cp4],
   },
   {
     id: 11,
-    name: "Fastrack Jupiter R3 Smartwatch with 1.38 TFT 2.5D Display ,Push Button Interaction, HRM,SpO2 & Sleep Tracking",
-    shortName: "Fastrack Jupiter R3 Smartwatch with 1.38 TFT 2.5D Display ,Push Button Interaction, HRM,SpO2 & Sleep Tracking",
-    category: "Unisex Watch", 
-    price: 1799, 
-    oldPrice: 2499, 
-    discount: 28, 
-    rating: 3.8, 
-    reviews: 3,
-    badge: "Best Seller", 
-    displayType: "Digital", 
-    gender: "Unisex", 
-    strapColor: "Black", 
-    size: "Small", 
-    available: true,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw3a84c999/images/Fastrack/Catalog/38204PP01K_1.jpg?sw=600&sh=600",
-    description: "Fastrack Jupiter R3 smartwatch features a compact 1.38 TFT display with 2.5D graphics, delivering clear visuals and smooth touch response. Designed with easy push button interactions and multiple menu styles, it ensures simple and intuitive navigation. Stay connected with Bluetooth calling and monitor your well-being around the clock using the 24/7 health suite that includes heart rate monitoring, SpO2 tracking, and sleep analysis. Equipped with everyday utilities such as alarm, stopwatch, and timer, the watch is housed in a lightweight plastic case with IP68 water and dust resistance, making it ideal for reliable daily use.",
-    features: ["3.63 cm AMOLED Display", "Working Crown", "AI Voice Assistant", "100+ Sports Modes", "24x7 Heart Rate Monitor", "IP68 Metal Case"],
-    colors: [{ name: "Black", hex: "#0F0F0F" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw3a84c999/images/Fastrack/Catalog/38204PP01K_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw15659226/images/Fastrack/Catalog/38204PP01K_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw15659226/images/Fastrack/Catalog/38204PP01K_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw6fa47a9f/images/Fastrack/Catalog/38204PP01K_4.jpg?sw=600&sh=600",
-    ],
+    name: "Fastrack Reflex Bling Smart Watch With 1.1 AMOLED Round Dial Pink Strap",
+    shortName: "Fastrack Reflex Bling Smart Watch With 1.1 AMOLED Screen...",
+    category: "Girls Watch", price: 1999, oldPrice: 2999, discount: 33, rating: 4.2, reviews: 11,
+    badge: null, displayType: "Smart", gender: "Girls", strapColor: "Pink", size: "Small", available: true,
+    thumb: WATCH_IMGS.pk1,
+    description: "Sparkle and smarts in one wrist. The Reflex Bling features a gorgeous AMOLED display with a blingy dial. Track your health, receive notifications, and look fabulous — all at once.",
+    features: ["1.1 AMOLED Display", "Heart Rate Monitor", "SpO2 Tracking", "Pink Silicone Strap", "7-Day Battery", "IP67 Water Resistant"],
+    colors: [{ name: "Pink", hex: "#f0c0d8" }, { name: "Black", hex: "#2a1a2a" }, { name: "Mint", hex: "#c0e8d0" }],
+    images: [WATCH_IMGS.pk1, WATCH_IMGS.pk2, WATCH_IMGS.pk3, WATCH_IMGS.pk4],
   },
   {
     id: 12,
-    name: "Fastrack Jupiter R3 Smartwatch with 1.38 TFT 2.5D Display, Push Button Interaction, Multiple Menu Styles",
-    shortName: "Fastrack Jupiter R3 Smartwatch with 1.38 TFT 2.5D Display, Push Button Interaction, Multiple Menu Styles",
-    category: "Unisex Watch", 
-    price: 1799, 
-    oldPrice: 2499, 
-    discount: 28, 
-    rating: 3.8, 
-    reviews: 3,
-    badge: "Best Seller", 
-    displayType: "Digital", 
-    gender: "Unisex", 
-    strapColor: "Green", 
-    size: "Small", 
-    available: true,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw011f735c/images/Fastrack/Catalog/38204PP02K_1.jpg?sw=600&sh=600",
-    description: "Fastrack Jupiter R3 smartwatch features a compact 1.38 TFT display with 2.5D graphics, delivering clear visuals and smooth touch response. Designed with easy push button interactions and multiple menu styles, it ensures simple and intuitive navigation. Stay connected with Bluetooth calling and monitor your well-being around the clock using the 24/7 health suite that includes heart rate monitoring, SpO2 tracking, and sleep analysis. Equipped with everyday utilities such as alarm, stopwatch, and timer, the watch is housed in a lightweight plastic case with IP68 water and dust resistance, making it ideal for reliable daily use.",
-    features: ["3.63 cm AMOLED Display", "Working Crown", "AI Voice Assistant", "100+ Sports Modes", "24x7 Heart Rate Monitor", "IP68 Metal Case"],
-    colors: [{ name: "Green", hex: "#50C878" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw011f735c/images/Fastrack/Catalog/38204PP02K_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwd3e7e03e/images/Fastrack/Catalog/38204PP02K_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw390a08ed/images/Fastrack/Catalog/38204PP02K_3.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw82fd6d42/images/Fastrack/Catalog/38204PP02K_4.jpg?sw=600&sh=600",
-    ],
-  },
-  {
-    id: 13,
-    name: "Fastrack Jupiter R3 Smartwatch with 1.38 TFT 2.5D Display, Push Button Interaction, Multiple Menu Styles",
-    shortName: "Fastrack Jupiter R3 Smartwatch with 1.38 TFT 2.5D Display, Push Button Interaction, Multiple Menu Styles",
-    category: "Unisex Watch", 
-    price: 1799, 
-    oldPrice: 2499, 
-    discount: 28, 
-    rating: 3.8, 
-    reviews: 3,
-    badge: "Best Seller", 
-    displayType: "Digital", 
-    gender: "Unisex", 
-    strapColor: "Grey", 
-    size: "Small", 
-    available: true,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw00024014/images/Fastrack/Catalog/38204PP03K_1.jpg?sw=600&sh=600",
-    description: "Fastrack Jupiter R3 smartwatch features a compact 1.38 TFT display with 2.5D graphics, delivering clear visuals and smooth touch response. Designed with easy push button interactions and multiple menu styles, it ensures simple and intuitive navigation. Stay connected with Bluetooth calling and monitor your well-being around the clock using the 24/7 health suite that includes heart rate monitoring, SpO2 tracking, and sleep analysis. Equipped with everyday utilities such as alarm, stopwatch, and timer, the watch is housed in a lightweight plastic case with IP68 water and dust resistance, making it ideal for reliable daily use.",
-    features: ["3.63 cm AMOLED Display", "Working Crown", "AI Voice Assistant", "100+ Sports Modes", "24x7 Heart Rate Monitor", "IP68 Metal Case"],
-    colors: [{ name: "Grey", hex: "#F5F5F5" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw00024014/images/Fastrack/Catalog/38204PP03K_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw8458290b/images/Fastrack/Catalog/38204PP03K_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwf6b9bc50/images/Fastrack/Catalog/38204PP03K_3.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwf6b9bc50/images/Fastrack/Catalog/38204PP03K_3.jpg?sw=600&sh=600",
-    ],
-  },
-  {
-    id: 14,
-    name: "Fastrack Jupiter S3 Smartwatch with 1.83 TFT 2.5D Display, Push Button & Rotary Crown,BT Calling, SpO2 & Sleep Tracking",
-    shortName: "Fastrack Jupiter S3 Smartwatch with 1.83 TFT 2.5D Display, Push Button & Rotary Crown,BT Calling, SpO2 & Sleep Tracking",
-    category: "Unisex Watch", 
-    price: 1599, 
-    oldPrice: 1999, 
-    discount: 20, 
-    rating: 5.8, 
-    reviews: 1,
-    badge: "Best Seller", 
-    displayType: "Smart", 
-    gender: "Unisex", 
-    strapColor: "Black", 
-    size: "Small", 
-    available: false,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw7afed33d/images/Fastrack/Catalog/38203PP01K_1.jpg?sw=600&sh=600",
-    description: "Fastrack Jupiter S3 smartwatch features a large 1.83 TFT display with 2.5D graphics, offering clear visuals and smooth interaction. Designed with intuitive push button controls and a functional rotary crown, it ensures effortless navigation across multiple menu styles. Stay connected on the go with Bluetooth calling and take charge of your wellness using the 24/7 health suite that includes heart rate monitoring, SpO2 tracking, and sleep analysis. Built for everyday use, it comes with essential smart tools like alarm, stopwatch, and timer, all housed in a lightweight plastic case with IP68 water and dust resistance for reliable daily performance.",
-    features: ["3.63 cm AMOLED Display", "Working Crown", "AI Voice Assistant", "100+ Sports Modes", "24x7 Heart Rate Monitor", "IP68 Metal Case"],
-    colors: [{ name: "Black", hex: "#0F0F0F" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw7afed33d/images/Fastrack/Catalog/38203PP01K_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwfcc08683/images/Fastrack/Catalog/38203PP01K_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwa36b6cdf/images/Fastrack/Catalog/38203PP01K_3.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw3f8d9ed5/images/Fastrack/Catalog/38203PP01K_4.jpg?sw=600&sh=600",
-    ],
-  },
-  {
-    id: 15,
-    name: "Fastrack Jupiter S3 Smartwatch with 1.83 TFT 2.5D Display, Push Button & Rotary Crown, 24/7 Health Suite",
-    shortName: "Fastrack Jupiter S3 Smartwatch with 1.83 TFT 2.5D Display, Push Button & Rotary Crown, 24/7 Health Suite",
-    category: "Unisex Watch", 
-    price: 1599, 
-    oldPrice: 1999, 
-    discount: 20, 
-    rating: 5.8, 
-    reviews: 1,
-    badge: "Best Seller", 
-    displayType: "Smart", 
-    gender: "Unisex", 
-    strapColor: "Blue", 
-    size: "Small", 
-    available: true,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw4408170d/images/Fastrack/Catalog/38203PP02K_1.jpg?sw=600&sh=600",
-    description: "Fastrack Jupiter S3 smartwatch features a large 1.83 TFT display with 2.5D graphics, offering clear visuals and smooth interaction. Designed with intuitive push button controls and a functional rotary crown, it ensures effortless navigation across multiple menu styles. Stay connected on the go with Bluetooth calling and take charge of your wellness using the 24/7 health suite that includes heart rate monitoring, SpO2 tracking, and sleep analysis. Built for everyday use, it comes with essential smart tools like alarm, stopwatch, and timer, all housed in a lightweight plastic case with IP68 water and dust resistance for reliable daily performance.",
-    features: ["3.63 cm AMOLED Display", "Working Crown", "AI Voice Assistant", "100+ Sports Modes", "24x7 Heart Rate Monitor", "IP68 Metal Case"],
-    colors: [{ name: "Blue", hex: "#0000FF" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw4408170d/images/Fastrack/Catalog/38203PP02K_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dwb73b6984/images/Fastrack/Catalog/38203PP02K_2.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw4b94529c/images/Fastrack/Catalog/38203PP02K_3.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw9f301ec9/images/Fastrack/Catalog/38203PP02K_4.jpg?sw=600&sh=600",
-    ],
-  },
-  {
-    id: 16,
-    name: "Fastrack Jupiter S3 Smartwatch with 1.83 TFT 2.5D Display, Push Button & Rotary Crown, SpO2 & Sleep Tracking",
-    shortName: "Fastrack Jupiter S3 Smartwatch with 1.83 TFT 2.5D Display, Push Button & Rotary Crown, SpO2 & Sleep Tracking",
-    category: "Unisex Watch", 
-    price: 1599, 
-    oldPrice: 1999, 
-    discount: 20, 
-    rating: 5.8, 
-    reviews: 1,
-    badge: "Best Seller", 
-    displayType: "Smart", 
-    gender: "Unisex", 
-    strapColor: "Grey", 
-    size: "Small", 
-    available: true,
-    thumb: "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw2d992d49/images/Fastrack/Catalog/38203PP03K_1.jpg?sw=600&sh=600",
-    description: "Fastrack Jupiter S3 smartwatch features a large 1.83 TFT display with 2.5D graphics, offering clear visuals and smooth interaction. Designed with intuitive push button controls and a functional rotary crown, it ensures effortless navigation across multiple menu styles. Stay connected on the go with Bluetooth calling and take charge of your wellness using the 24/7 health suite that includes heart rate monitoring, SpO2 tracking, and sleep analysis. Built for everyday use, it comes with essential smart tools like alarm, stopwatch, and timer, all housed in a lightweight plastic case with IP68 water and dust resistance for reliable daily performance.",
-    features: ["3.63 cm AMOLED Display", "Working Crown", "AI Voice Assistant", "100+ Sports Modes", "24x7 Heart Rate Monitor", "IP68 Metal Case"],
-    colors: [{ name: "Grey", hex: "#808080" }],
-    images: [
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw2d992d49/images/Fastrack/Catalog/38203PP03K_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw2d992d49/images/Fastrack/Catalog/38203PP03K_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw2d992d49/images/Fastrack/Catalog/38203PP03K_1.jpg?sw=600&sh=600",
-      "https://www.fastrack.in/dw/image/v2/BKDD_PRD/on/demandware.static/-/Sites-titan-master-catalog/default/dw1de3d3b7/images/Fastrack/Catalog/38203PP03K_4.jpg?sw=600&sh=600",
-    ],
+    name: "Fastrack Casual Analog Blue Dial Unisex Silicon Strap Watch",
+    shortName: "Fastrack Casual Analog Blue Dial Unisex Watch...",
+    category: "Unisex Watch", price: 795, oldPrice: null, discount: null, rating: 3.8, reviews: 7,
+    badge: null, displayType: "Analog", gender: "Unisex", strapColor: "Blue", size: "Medium", available: false,
+    thumb: WATCH_IMGS.nb1,
+    description: "The everyday essential. Simple, clean, and reliable — the Casual Blue is for those who appreciate no-frills style. A classic blue dial on a comfortable silicone strap that pairs with everything in your wardrobe.",
+    features: ["Quartz Analog", "Blue Silicone Strap", "Clean Dial Design", "Lightweight", "Water Resistant 30m"],
+    colors: [{ name: "Blue", hex: "#1a3a6e" }, { name: "Black", hex: "#1a1a1a" }, { name: "Red", hex: "#6e1a1a" }],
+    images: [WATCH_IMGS.nb1, WATCH_IMGS.nb2, WATCH_IMGS.nb3, WATCH_IMGS.nb4],
   },
 ];
 
@@ -380,7 +217,7 @@ const FILTERS = {
   size:         { label: "Screen Size",   options: ["Small", "Medium", "Large"] },
   gender:       { label: "Gender",        options: ["Men", "Girls", "Unisex"] },
   price:        { label: "Price",         options: ["Under ₹1000", "₹1000–₹2000", "₹2000–₹4000", "Above ₹4000"] },
-  strapColor:   { label: "Strap Color",   options: ["Black", "Silver", "Rose Gold", "Brown", "Grey", "Blue", "Pink", "Beige", "Green"] },
+  strapColor:   { label: "Strap Color",   options: ["Black", "Silver", "Rose Gold", "Brown", "Grey", "Blue", "Pink"] },
   discount:     { label: "Discounts",     options: ["10% and above", "30% and above", "50% and above"] },
   availability: { label: "Availability",  options: ["In Stock", "Out of Stock"] },
 };
@@ -400,20 +237,26 @@ function discountMatch(discount, range) {
   return true;
 }
 
+// ── Img with fallback ─────────────────────────────────────────────────────────
 function WatchImg({ src, alt, className, style }) {
   const [err, setErr] = useState(false);
   if (err) {
     return (
-      <div className={`flex items-center justify-center bg-gray-100 text-gray-400 text-4xl ${className}`} style={style}>
+      <div className={`flex items-center justify-center bg-gray-100 text-gray-400 text-xs ${className}`} style={style}>
         ⌚
       </div>
     );
   }
   return (
-    <img src={src} alt={alt || "watch"} className={className} style={style} onError={() => setErr(true)} />
+    <img
+      src={src} alt={alt || "watch"}
+      className={className} style={style}
+      onError={() => setErr(true)}
+    />
   );
 }
 
+// ── FilterSection ─────────────────────────────────────────────────────────────
 function FilterSection({ filterKey, config, selected, onChange }) {
   const [open, setOpen] = useState(true);
   return (
@@ -444,12 +287,13 @@ function FilterSection({ filterKey, config, selected, onChange }) {
   );
 }
 
+// ── ProductCard ───────────────────────────────────────────────────────────────
 function ProductCard({ p, onOpen }) {
   const [wished, setWished] = useState(false);
   return (
     <div className="border border-gray-200 rounded-xl overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow duration-200 bg-white"
       onClick={() => onOpen(p.id)}>
-      <div className="relative overflow-hidden bg-gray-50" style={{ height: 220 }}>
+      <div className="relative overflow-hidden" style={{ height: 220 }}>
         {p.badge && (
           <div className={`absolute top-3 left-3 z-10 text-white text-xs font-bold px-2.5 py-1 rounded-sm ${p.badge === "Best Seller" ? "bg-orange-500" : "bg-gray-900"}`}>
             {p.badge}
@@ -461,10 +305,12 @@ function ProductCard({ p, onOpen }) {
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </svg>
         </button>
-        <WatchImg src={p.thumb} alt={p.shortName}
-          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 p-3" />
+        <WatchImg
+          src={p.thumb} alt={p.shortName}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
         {!p.available && (
-          <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center z-10">
             <span className="text-xs font-bold text-gray-500 border border-gray-400 px-3 py-1 rounded bg-white">OUT OF STOCK</span>
           </div>
         )}
@@ -488,6 +334,7 @@ function ProductCard({ p, onOpen }) {
   );
 }
 
+// ── ProductDetail Modal ───────────────────────────────────────────────────────
 function ProductDetail({ productId, onClose }) {
   const p = ALL_PRODUCTS.find(x => x.id === productId);
   const [activeImg, setActiveImg] = useState(0);
@@ -495,9 +342,14 @@ function ProductDetail({ productId, onClose }) {
   const [added, setAdded] = useState(false);
   const [wished, setWished] = useState(false);
   const [qty, setQty] = useState(1);
+  const { addToCart } = useCart();
   if (!p) return null;
 
-  const handleAddToCart = () => { setAdded(true); setTimeout(() => setAdded(false), 2000); };
+  const handleAddToCart = () => {
+    addToCart(p, p.colors[selectedColor].name, qty);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -505,7 +357,7 @@ function ProductDetail({ productId, onClose }) {
       onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] overflow-y-auto relative"
         onClick={e => e.stopPropagation()}>
-
+        {/* Close */}
         <button onClick={onClose}
           className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -516,16 +368,20 @@ function ProductDetail({ productId, onClose }) {
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* LEFT — Images */}
           <div className="p-5 bg-gray-50 rounded-tl-2xl rounded-bl-none md:rounded-bl-2xl rounded-tr-2xl md:rounded-tr-none">
-            <div className="rounded-xl overflow-hidden bg-white mb-3 flex items-center justify-center" style={{ height: 340 }}>
-              <WatchImg src={p.images[activeImg]} alt={p.name}
-                className="w-full h-[400px] object-contain p-4 transition-all duration-300" />
+            {/* Main image */}
+            <div className="rounded-xl overflow-hidden mb-3" style={{ height: 320 }}>
+              <WatchImg
+                src={p.images[activeImg]} alt={p.name}
+                className="w-full h-full object-cover transition-all duration-300"
+              />
             </div>
+            {/* Thumbnails */}
             <div className="flex gap-2.5">
               {p.images.map((img, i) => (
                 <button key={i} onClick={() => setActiveImg(i)}
-                  className={`rounded-lg overflow-hidden border-2 flex-shrink-0 bg-white flex items-center justify-center transition-all ${activeImg === i ? "border-orange-500 shadow-md scale-105" : "border-gray-200 hover:border-gray-400"}`}
-                  style={{ width: 72, height: 72 }}>
-                  <WatchImg src={img} alt={`view ${i + 1}`} className="w-full h-full object-contain p-1" />
+                  className={`rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${activeImg === i ? "border-orange-500 shadow-md scale-105" : "border-transparent hover:border-gray-300"}`}
+                  style={{ width: 70, height: 70 }}>
+                  <WatchImg src={img} alt={`view ${i + 1}`} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
@@ -539,7 +395,7 @@ function ProductDetail({ productId, onClose }) {
           {/* RIGHT — Info */}
           <div className="p-6 flex flex-col gap-4">
             <p className="text-xs text-gray-400">{p.category} / {p.displayType}</p>
-            <h2 className="text-base font-black text-gray-900 leading-snug">{p.name}</h2>
+            <h2 className="text-lg font-black text-gray-900 leading-snug">{p.name}</h2>
 
             {p.rating && (
               <div className="flex items-center gap-2">
@@ -565,6 +421,7 @@ function ProductDetail({ productId, onClose }) {
 
             <p className="text-sm text-gray-600 leading-relaxed">{p.description}</p>
 
+            {/* Color */}
             <div>
               <p className="text-xs font-black tracking-widest text-gray-700 mb-2">
                 COLOR: <span className="text-orange-500">{p.colors[selectedColor].name}</span>
@@ -584,6 +441,7 @@ function ProductDetail({ productId, onClose }) {
               </div>
             </div>
 
+            {/* Features */}
             <div>
               <p className="text-xs font-black tracking-widest text-gray-700 mb-2">KEY FEATURES</p>
               <div className="flex flex-wrap gap-2">
@@ -593,6 +451,7 @@ function ProductDetail({ productId, onClose }) {
               </div>
             </div>
 
+            {/* Qty + Stock */}
             <div className="flex items-center gap-4">
               <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
                 <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 transition-colors text-lg font-bold">−</button>
@@ -604,6 +463,7 @@ function ProductDetail({ productId, onClose }) {
               </span>
             </div>
 
+            {/* CTA */}
             <div className="flex gap-3">
               <button onClick={handleAddToCart} disabled={!p.available}
                 className={`flex-1 py-3 rounded-full text-sm font-black tracking-widest transition-all duration-200 ${
@@ -621,6 +481,7 @@ function ProductDetail({ productId, onClose }) {
               </button>
             </div>
 
+            {/* Delivery info */}
             <div className="border-t border-gray-100 pt-3 flex flex-col gap-1.5">
               {[
                 ["M5 12H19M12 5l7 7-7 7", "Free delivery on orders above ₹999"],
@@ -640,6 +501,7 @@ function ProductDetail({ productId, onClose }) {
   );
 }
 
+// ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Watches() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState({});
